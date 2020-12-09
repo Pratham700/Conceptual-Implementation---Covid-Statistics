@@ -12,6 +12,7 @@
   "dependencies": {
     "express": "4.17.1",
     "mochawesome": "6.1.1",
+    "mongo-round": "^1.0.0",
     "mongodb": "^3.6.3",
     "mongoose": "^5.10.15",
     "node-serialize": "0.0.4"
