@@ -23,33 +23,33 @@ app.get("/totalRecovered" , async (req,res) => {
     res.send({data: totRecovered[0] }) ;
 }) ; 
 
-app.get("/totalActive", async (req,res)=>{
-    const activeCase = await connection.aggregate([
-        {
-            $group: {
-              _id: "total",
-              totalInfected: {
-                $sum: "$infected",
-              },
-              totalRecovered: {
-                $sum: "$recovered",
-              },
-            },
-          },
-          {
-            $addFields: {
-              active: { $subtract: ["$totalInfected", "$totalRecovered"] },
-            },
-          },
-          {
-            $project: {
-              _id: "total",
-              active: "$active",
-            },
-          },
-    ])
-    res.send({data: activeCase }) ;
-}) ; 
+app.get("/totalActive", async (req, res) => {
+  const result = await connection.aggregate([
+    {
+      $group: {
+        _id: "total",
+        totalInfected: {
+          $sum: "$infected",
+        },
+        totalRecovered: {
+          $sum: "$recovered",
+        },
+      },
+    },
+    {
+      $addFields: {
+        active: { $subtract: ["$totalInfected", "$totalRecovered"] },
+      },
+    },
+    {
+      $project: {
+        _id: "total",
+        active: "$active",
+      },
+    },
+  ]);
+  res.send({ data: result[0] });
+});
 
 app.get("/totalDeath", async (req,res) => {
 
@@ -66,72 +66,62 @@ app.get("/totalDeath", async (req,res) => {
     res.send({data: totDeath[0] }) ;
 }) ; 
 
-app.get("/hotspotStates", async (req,res)=> {
-   
-    const hotspot = connection.aggregate([
-        {
-            $group: {
-                _id:"$state",
-                rate: { $sum: {
-
-                    $division:[ {$substract:["$infected","$recovered"]},"$infected"] 
-                }
-         
-                }
-            }
-            
-        
-        },
-
-        {
-            $match: {
-                $rate: {
-                    $gt:0.1
-                }
-            }
-        },
-        {
-            $project: {
-                state: "$_id",
-                _id:0,
-                rate: round("$rate" , 5), 
-            }
-        }
-        
-    ])
-    res.send({data: hotspot }) ;
-}) ;
-
-app.get("/healthyStates",async (req,res)=> {
-    const result = await connection.aggregate([
-        {
-          $group: {
-            _id: "$state",
-            mortality: { $sum: { $divide: ["$death", "$infected"] } },
+app.get("/hotspotStates", async (req, res) => {
+  const result = await connection.aggregate([
+    {
+      $group: {
+        _id: "$state",
+        rate: {
+          $sum: {
+            $divide: [{ $subtract: ["$infected", "$recovered"] }, "$infected"],
           },
         },
-        {
-          $match: {
-            mortality: {
-              $lt: 0.005,
-            },
-          },
+      },
+    },
+    {
+      $match: {
+        rate: {
+          $gt: 0.1,
         },
-        {
-          $project: {
-            state: "$_id",
-            _id: 0,
-            mortality: round("$mortality", 5),
-          },
+      },
+    },
+
+    {
+      $project: {
+        state: "$_id",
+        _id: 0,
+        rate: round("$rate", 5),
+      },
+    },
+  ]);
+  res.send({ data: result });
+});
+
+app.get("/healthyStates", async (req, res) => {
+  const result = await connection.aggregate([
+    {
+      $group: {
+        _id: "$state",
+        mortality: { $sum: { $divide: ["$death", "$infected"] } },
+      },
+    },
+    {
+      $match: {
+        mortality: {
+          $lt: 0.005,
         },
-      ]);
-      res.send({data: result }) ;
-})
-
-
-
-
-
+      },
+    },
+    {
+      $project: {
+        state: "$_id",
+        _id: 0,
+        mortality: round("$mortality", 5),
+      },
+    },
+  ]);
+  res.send({ data: result });
+});
 
 app.listen(port, () => console.log(`App listening on port ${port}!`))
 
