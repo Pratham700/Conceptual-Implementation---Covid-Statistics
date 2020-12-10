@@ -1,13 +1,22 @@
-const express = require('express')
-const app = express()
+const express = require("express");
+const app = express();
+const round = require("mongo-round")
 const bodyParser = require("body-parser");
-const port = 8080
-const round = require('mongo-round') ;
+const port = 8080;
 
 // Parse JSON bodies (as sent by API clients)
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-const { connection } = require('./connector') ;
+const { connection } = require("./connector");
+
+// app.get("/totalRecovered", async (req, res) => {
+//   const result = await connection.find().select("recovered -_id");
+//   let totalRecovered = 0;
+//   result.forEach((element) => {
+//     totalRecovered += element.recovered;
+//   });
+//   res.send({ data: { _id: "total", recovered: totalRecovered } });
+// });
 
 app.get("/totalRecovered", async (req, res) => {
   const result = await connection.aggregate([
@@ -22,6 +31,17 @@ app.get("/totalRecovered", async (req, res) => {
   ]);
   res.send({ data: result[0] });
 });
+
+// app.get("/totalActive", async (req, res) => {
+//   const result = await connection.find().select("recovered infected -_id");
+//   let totalRecovered = 0,
+//     totalInfected = 0;
+//   result.forEach((element) => {
+//     totalRecovered += element.recovered;
+//     totalInfected += element.infected;
+//   });
+//   res.send({ data: { _id: "total", active: totalInfected - totalRecovered } });
+// });
 
 app.get("/totalActive", async (req, res) => {
   const result = await connection.aggregate([
@@ -51,6 +71,14 @@ app.get("/totalActive", async (req, res) => {
   res.send({ data: result[0] });
 });
 
+// app.get("/totalDeath", async (req, res) => {
+//   const result = await connection.find().select("death -_id");
+//   let totalDeath = 0;
+//   result.forEach((element) => {
+//     totalDeath += element.death;
+//   });
+//   res.send({ data: { _id: "total", death: totalDeath } });
+// });
 
 app.get("/totalDeath", async (req, res) => {
   const result = await connection.aggregate([
