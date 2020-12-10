@@ -9,19 +9,19 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 const { connection } = require('./connector') ;
 
-app.get("/totalRecovered" , async (req,res) => {
-    const totRecovered = await connection.aggregate([
-        {
-            $group: {
-                _id:"total",
-                recovered: {
-                    $sum: "$recovered",
-                },
-            },
+app.get("/totalRecovered", async (req, res) => {
+  const result = await connection.aggregate([
+    {
+      $group: {
+        _id: "total",
+        recovered: {
+          $sum: "$recovered",
         },
-    ]);
-    res.send({data: totRecovered[0] }) ;
-}) ; 
+      },
+    },
+  ]);
+  res.send({ data: result[0] });
+});
 
 app.get("/totalActive", async (req, res) => {
   const result = await connection.aggregate([
@@ -51,20 +51,20 @@ app.get("/totalActive", async (req, res) => {
   res.send({ data: result[0] });
 });
 
-app.get("/totalDeath", async (req,res) => {
 
-    const totDeath = await connection.aggregate([
-        {
-            $group: {
-                _id:"total",
-                death: {
-                    $sum: "$death",
-                },
-            },
+app.get("/totalDeath", async (req, res) => {
+  const result = await connection.aggregate([
+    {
+      $group: {
+        _id: "total",
+        death: {
+          $sum: "$death",
         },
-    ])
-    res.send({data: totDeath[0] }) ;
-}) ; 
+      },
+    },
+  ]);
+  res.send({ data: result[0] });
+});
 
 app.get("/hotspotStates", async (req, res) => {
   const result = await connection.aggregate([
@@ -123,6 +123,6 @@ app.get("/healthyStates", async (req, res) => {
   res.send({ data: result });
 });
 
-app.listen(port, () => console.log(`App listening on port ${port}!`))
+app.listen(port, () => console.log(`App listening on port ${port}!`));
 
 module.exports = app;
