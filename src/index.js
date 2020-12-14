@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const round = require("mongo-round")
+const round = require("mongo-round");
 const bodyParser = require("body-parser");
 const port = 8080;
 
@@ -8,15 +8,6 @@ const port = 8080;
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 const { connection } = require("./connector");
-
-// app.get("/totalRecovered", async (req, res) => {
-//   const result = await connection.find().select("recovered -_id");
-//   let totalRecovered = 0;
-//   result.forEach((element) => {
-//     totalRecovered += element.recovered;
-//   });
-//   res.send({ data: { _id: "total", recovered: totalRecovered } });
-// });
 
 app.get("/totalRecovered", async (req, res) => {
   const result = await connection.aggregate([
@@ -32,16 +23,6 @@ app.get("/totalRecovered", async (req, res) => {
   res.send({ data: result[0] });
 });
 
-// app.get("/totalActive", async (req, res) => {
-//   const result = await connection.find().select("recovered infected -_id");
-//   let totalRecovered = 0,
-//     totalInfected = 0;
-//   result.forEach((element) => {
-//     totalRecovered += element.recovered;
-//     totalInfected += element.infected;
-//   });
-//   res.send({ data: { _id: "total", active: totalInfected - totalRecovered } });
-// });
 
 app.get("/totalActive", async (req, res) => {
   const result = await connection.aggregate([
@@ -71,15 +52,6 @@ app.get("/totalActive", async (req, res) => {
   res.send({ data: result[0] });
 });
 
-// app.get("/totalDeath", async (req, res) => {
-//   const result = await connection.find().select("death -_id");
-//   let totalDeath = 0;
-//   result.forEach((element) => {
-//     totalDeath += element.death;
-//   });
-//   res.send({ data: { _id: "total", death: totalDeath } });
-// });
-
 app.get("/totalDeath", async (req, res) => {
   const result = await connection.aggregate([
     {
@@ -100,9 +72,7 @@ app.get("/hotspotStates", async (req, res) => {
       $group: {
         _id: "$state",
         rate: {
-          $sum: {
-            $divide: [{ $subtract: ["$infected", "$recovered"] }, "$infected"],
-          },
+          $sum: { $divide: [{ $subtract: ["$infected", "$recovered"] }, "$infected"]},
         },
       },
     },
@@ -118,7 +88,7 @@ app.get("/hotspotStates", async (req, res) => {
       $project: {
         state: "$_id",
         _id: 0,
-        rate: round("$rate", 5),
+        rate: {$round:["$rate", 5]},
       },
     },
   ]);
@@ -144,7 +114,7 @@ app.get("/healthyStates", async (req, res) => {
       $project: {
         state: "$_id",
         _id: 0,
-        mortality: round("$mortality", 5),
+        mortality: {$round:["$mortality", 5]},
       },
     },
   ]);
